@@ -1,8 +1,6 @@
 //Axel Ortiz Ricalde
-
 using System;
 using System.IO;
-
 namespace Generador
 {
     public class Error : Exception

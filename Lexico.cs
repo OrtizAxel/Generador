@@ -1,5 +1,4 @@
 //Axel Ortiz Ricalde
-
 using System.IO;
 
 namespace Generador
@@ -8,25 +7,33 @@ namespace Generador
     {
         protected StreamReader archivo;
         protected StreamWriter log;
+        protected StreamWriter lenguaje;
+        protected StreamWriter programa;
         const int F = -1;
         const int E = -2;
         protected int linea, posicion = 0;
         int[,] TRAND = new int[,]
         {
-            
+            {0,1,5,3,4,5},
+            {F,F,2,F,F,F},
+            {F,F,F,F,F,F},
+            {F,F,F,3,F,F},
+            {F,F,F,F,F,F},
+            {F,F,F,F,F,F},
         };
         public Lexico()
         {
             linea = 1;
-            string path = "C:\\Users\\Axrro\\OneDrive\\Documentos\\Escuela\\Tareas\\Lenguajes y Automatas II\\Repositorio\\Generador\\prueba.cpp";
+            string path = "c.gram";
             bool existencia = File.Exists(path);
-            log = new StreamWriter("C:\\Users\\Axrro\\OneDrive\\Documentos\\Escuela\\Tareas\\Lenguajes y Automatas II\\Repositorio\\Generador\\prueba.Log"); 
+            log = new StreamWriter("c.Log"); 
             log.AutoFlush = true;
-            //log.WriteLine("Primer constructor");
-            log.WriteLine("Archivo: prueba.cpp");
-            log.WriteLine("Fecha "+DateTime.Now);//Requerimiento 1:
-            
-            //Investigar como checar si un archivo existe o no existe 
+            lenguaje = new StreamWriter("C:\\generador\\Lenguaje.cs");
+            lenguaje.AutoFlush = true;
+            programa = new StreamWriter("C:\\generador\\Program.cs");
+            programa.AutoFlush = true;
+            log.WriteLine("Archivo: c.gram");
+            log.WriteLine("Fecha "+DateTime.Now);
             if (existencia == true)
             {
                 archivo = new StreamReader(path);
@@ -39,14 +46,13 @@ namespace Generador
         public Lexico(string nombre)
         {
             linea = 1;
-            //log = new streamWriter(nombre.log)
-            //Usar el objeto path
-            
             string pathLog = Path.ChangeExtension(nombre, ".log");
             log = new StreamWriter(pathLog); 
             log.AutoFlush = true;
-            string pathAsm = Path.ChangeExtension(nombre, ".asm");
-            //log.WriteLine("Segundo constructor");
+            lenguaje = new StreamWriter("C:\\generador\\Lenguaje.cs");
+            lenguaje.AutoFlush = true;
+            programa = new StreamWriter("C:\\generador\\Program.cs");
+            programa.AutoFlush = true;
             log.WriteLine("Archivo: "+nombre);
             log.WriteLine("Fecha: " +DateTime.Now);
             if (File.Exists(nombre))
@@ -62,17 +68,54 @@ namespace Generador
         {
             archivo.Close();
             log.Close();
+            lenguaje.Close();
+            programa.Close();
         }       
-
         private void clasifica(int estado)
         {
-            
+            switch(estado)
+            {
+                case 1:
+                    setClasificacion(Tipos.ST);
+                    break;
+                case 2:
+                    setClasificacion(Tipos.Produce);
+                    break;
+                case 3:
+                    setClasificacion(Tipos.SNT);
+                    break;
+                case 4:
+                    setClasificacion(Tipos.FinProduccion);
+                    break;
+                case 5:
+                    setClasificacion(Tipos.ST);
+                    break;
+            }
         }
         private int columna(char c)
         {
-            return 0;
+            if(c == 10)
+            {
+                return 4;
+            }
+            else if (char.IsWhiteSpace(c))
+            {
+                return 0;
+            }
+            else if(c == '-')
+            {
+                return 1;
+            }
+            else if (c == '>')
+            {
+                return 2;
+            }
+            else if(char.IsLetter(c))
+            {
+                return 3;
+            }
+            return 5;
         }
-        //WS,EF,EL,L, D, .,	E, +, -, =,	:, ;, &, |,	!, >, <, *,	%, /, ", ?,La, ', #
         public void NextToken() 
         {
             string buffer = "";           
@@ -105,6 +148,10 @@ namespace Generador
             if(estado == E)
             {
                 throw new Error("Error lexico: No definido en linea: "+linea, log);
+            }
+            if(!FinArchivo())
+            {
+                log.WriteLine(getContenido() + " " + getClasificacion());
             }
         }
 

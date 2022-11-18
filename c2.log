@@ -1,0 +1,21 @@
+Archivo: c2.gram
+Fecha: 17/11/2022 06:28:11 p. m.
+Gramatica SNT
+: ST
+cplusplus SNT
+
+ FinProduccion
+Programa SNT
+-> Produce
+
+ FinProduccion
+Librerias SNT
+-> Produce
+
+ FinProduccion
+Variables SNT
+-> Produce
+
+ FinProduccion
+ListaIdentificadores SNT
+-> Produce

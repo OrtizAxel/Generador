@@ -1,5 +1,4 @@
 //Axel Ortiz Ricalde
-
 using System;
 
 namespace Generador
