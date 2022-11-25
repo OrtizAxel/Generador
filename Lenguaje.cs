@@ -10,6 +10,10 @@ using System.Collections.Generic;
 //Requerimiento 4: El constructor Lexico() parametrizado debe validar que la extension del archivo a complilar
 //                 sea .gen y si no levanta una excepcion
 //Requerimiento 5: Resolver la ambiguedad de ST y SNT
+//                 Recorrer linea por linea el archivo gram para extraer el nombre de cada produccion
+//Requerimiento 6: Agregar el parentesis izquierdo y derecho escapados en la matriz de transiciones
+//Requerimiento 7: Implementar el or y la cerradura epsilon 
+//
 namespace Generador
 {
     public class Lenguaje : Sintaxis, IDisposable
@@ -17,6 +21,7 @@ namespace Generador
         int contTab;
         string primeraProduccion;
         bool produccionPublica;
+        List<string> listaSNT;
 
 
         public Lenguaje(string nombre) : base(nombre)
@@ -24,19 +29,55 @@ namespace Generador
             contTab = 0;
             primeraProduccion = "";
             produccionPublica = true;
+            listaSNT = new List<string>();
         }
         public Lenguaje()
         {
             contTab = 0;
             primeraProduccion = "";
             produccionPublica = true;
+            listaSNT = new List<string>();
         }
         public void Dispose()
         {
             cerrar();
         }
+        
+        private bool esSNT(string contenido)
+        {
+            return listaSNT.Contains(contenido);
+        }
+        private void agregarSNT(string contenido)
+        {
+            //Requerimiento 6
+            listaSNT.Add(contenido);
+        }
+        
+        public void gramatica()
+        {
+            contTab = 0;
+            cabecera();
+            primeraProduccion = getContenido();
+            Programa(primeraProduccion);
+            cabeceraLenguaje();
+            listaProducciones();
+            contTab = 1;
+            lenguaje.WriteLine(tabula() + "}");
+            lenguaje.WriteLine("}");
+        }
+        private void cabecera()
+        {
+            match("Gramatica");
+            match(":");
+            match(Tipos.ST);
+            match(Tipos.FinProduccion);
+        }
         private void Programa(string produccionPrincipal)
         {
+            agregarSNT("Programa");
+            agregarSNT("Librerias");
+            agregarSNT("variables");
+            agregarSNT("Lista identificadores");
             contTab = 0;
             programa.WriteLine("using System;");
             programa.WriteLine("using System.IO;");
@@ -74,26 +115,6 @@ namespace Generador
             programa.WriteLine(tabula() + "}");
             contTab--;
             programa.WriteLine(tabula() + "}");
-        }
-        public void gramatica()
-        {
-            contTab = 0;
-            cabecera();
-            primeraProduccion = getContenido();
-            Programa(primeraProduccion);
-            cabeceraLenguaje();
-            listaProducciones();
-            contTab = 1;
-            lenguaje.WriteLine(tabula() + "}");
-            lenguaje.WriteLine("}");
-        }
-
-        private void cabecera()
-        {
-            match("Gramatica");
-            match(":");
-            match(Tipos.SNT);
-            match(Tipos.FinProduccion);
         }
         private void cabeceraLenguaje()
         {
@@ -137,7 +158,7 @@ namespace Generador
             }
             lenguaje.WriteLine(tabula() + "{");
             contTab++;
-            match(Tipos.SNT);
+            match(Tipos.ST);
             match(Tipos.Produce);
             simbolos();
             match(Tipos.FinProduccion);
@@ -151,26 +172,33 @@ namespace Generador
 
         private void simbolos()
         {
-            if(esTipo(getContenido()))
+            if(getContenido() == "(")
+            {
+                match("(");
+                lenguaje.WriteLine(tabula() + "if()");
+                lenguaje.WriteLine(tabula() + "{");
+                contTab++;
+                simbolos();
+                match(")");
+                contTab--;
+                lenguaje.WriteLine(tabula() + "}");
+            }
+            else if(esTipo(getContenido()))
             {
                 lenguaje.WriteLine(tabula() + "match(Tipos." + getContenido() + ");");
-                match(Tipos.SNT);
+                match(Tipos.ST);
+            }
+            else if(esSNT(getContenido()))
+            {
+                lenguaje.WriteLine(tabula() + "match(\"" + getContenido() + "\");");
+                match(Tipos.ST);
             }
             else if(getClasificacion() == Tipos.ST)
             {
                 lenguaje.WriteLine(tabula() + "match(\"" + getContenido() + "\");");
                 match(Tipos.ST);
-            }
-            else if(getClasificacion() == Tipos.SNT)
-            {
-                lenguaje.WriteLine(tabula() + getContenido() + "();");
-                match(Tipos.SNT);
-            }
-            else
-            {
-                throw new Exception("Error de sintaxis");
-            }
-            if(getClasificacion() != Tipos.FinProduccion)
+            }        
+            if(getClasificacion() != Tipos.FinProduccion && getContenido() != ")")
             {
                 simbolos();
             }
@@ -195,7 +223,7 @@ namespace Generador
                 case "FinSentencia":
                 case "Cadena":
                 case "TipoDato":
-                case "caseZona":
+                case "Zona":
                 case "Condicion":
                 case "Ciclo":
                     return true;

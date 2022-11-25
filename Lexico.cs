@@ -28,9 +28,9 @@ namespace Generador
             bool existencia = File.Exists(path);
             log = new StreamWriter("c.Log"); 
             log.AutoFlush = true;
-            lenguaje = new StreamWriter("C:\\generador\\Lenguaje.cs");
+            lenguaje = new StreamWriter("C:\\Generico\\Lenguaje.cs");
             lenguaje.AutoFlush = true;
-            programa = new StreamWriter("C:\\generador\\Program.cs");
+            programa = new StreamWriter("C:\\Generico\\Program.cs");
             programa.AutoFlush = true;
             log.WriteLine("Archivo: c.gram");
             log.WriteLine("Fecha "+DateTime.Now);
@@ -49,9 +49,9 @@ namespace Generador
             string pathLog = Path.ChangeExtension(nombre, ".log");
             log = new StreamWriter(pathLog); 
             log.AutoFlush = true;
-            lenguaje = new StreamWriter("C:\\generador\\Lenguaje.cs");
+            lenguaje = new StreamWriter("C:\\Generico\\Lenguaje.cs");
             lenguaje.AutoFlush = true;
-            programa = new StreamWriter("C:\\generador\\Program.cs");
+            programa = new StreamWriter("C:\\Generico\\Program.cs");
             programa.AutoFlush = true;
             log.WriteLine("Archivo: "+nombre);
             log.WriteLine("Fecha: " +DateTime.Now);
@@ -82,7 +82,7 @@ namespace Generador
                     setClasificacion(Tipos.Produce);
                     break;
                 case 3:
-                    setClasificacion(Tipos.SNT);
+                    setClasificacion(Tipos.ST);
                     break;
                 case 4:
                     setClasificacion(Tipos.FinProduccion);
