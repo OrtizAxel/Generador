@@ -8,9 +8,9 @@ using System.Collections.Generic;
 //                 produccion de la gramatica (hecho)
 //Requerimiento 3: La primera produccion es publica y el resto privadas (hecho)
 //Requerimiento 4: El constructor Lexico() parametrizado debe validar que la extension del archivo a complilar
-//                 sea .gen y si no levanta una excepcion
+//                 sea .gen y si no levanta una excepcion (hecho)
 //Requerimiento 5: Resolver la ambiguedad de ST y SNT
-//                 Recorrer linea por linea el archivo gram para extraer el nombre de cada produccion
+//                 Recorrer linea por linea el archivo gram para extraer el nombre de cada produccion (hecho)
 //Requerimiento 6: Agregar el parentesis izquierdo y derecho escapados en la matriz de transiciones
 //Requerimiento 7: Implementar el or y la cerradura epsilon 
 //
@@ -47,14 +47,25 @@ namespace Generador
         {
             return listaSNT.Contains(contenido);
         }
-        private void agregarSNT(string contenido)
+        private void agregarSNT()
         {
             //Requerimiento 6
-            listaSNT.Add(contenido);
+            while(!FinArchivo())
+            {
+                listaSNT.Add(getContenido());
+                archivo.ReadLine();
+                NextToken();
+            }
+            archivo.DiscardBufferedData();
+            archivo.BaseStream.Seek(0, SeekOrigin.Begin);
+            NextToken();
         }
         
         public void gramatica()
-        {
+        { 
+            archivo.ReadLine();
+            NextToken();
+            agregarSNT();
             contTab = 0;
             cabecera();
             primeraProduccion = getContenido();
@@ -64,6 +75,7 @@ namespace Generador
             contTab = 1;
             lenguaje.WriteLine(tabula() + "}");
             lenguaje.WriteLine("}");
+            
         }
         private void cabecera()
         {
@@ -74,10 +86,6 @@ namespace Generador
         }
         private void Programa(string produccionPrincipal)
         {
-            agregarSNT("Programa");
-            agregarSNT("Librerias");
-            agregarSNT("variables");
-            agregarSNT("Lista identificadores");
             contTab = 0;
             programa.WriteLine("using System;");
             programa.WriteLine("using System.IO;");
@@ -190,7 +198,7 @@ namespace Generador
             }
             else if(esSNT(getContenido()))
             {
-                lenguaje.WriteLine(tabula() + "match(\"" + getContenido() + "\");");
+                lenguaje.WriteLine(tabula() + getContenido() + "();");
                 match(Tipos.ST);
             }
             else if(getClasificacion() == Tipos.ST)

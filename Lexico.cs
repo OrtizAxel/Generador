@@ -154,7 +154,6 @@ namespace Generador
                 log.WriteLine(getContenido() + " " + getClasificacion());
             }
         }
-
         public bool FinArchivo()
         {
             return archivo.EndOfStream;
