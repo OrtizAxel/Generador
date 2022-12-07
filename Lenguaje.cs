@@ -23,7 +23,6 @@ namespace Generador
         bool produccionPublica;
         List<string> listaSNT;
 
-
         public Lenguaje(string nombre) : base(nombre)
         {
             contTab = 0;
@@ -49,7 +48,6 @@ namespace Generador
         }
         private void agregarSNT()
         {
-            //Requerimiento 6
             while(!FinArchivo())
             {
                 listaSNT.Add(getContenido());
@@ -74,8 +72,7 @@ namespace Generador
             listaProducciones();
             contTab = 1;
             lenguaje.WriteLine(tabula() + "}");
-            lenguaje.WriteLine("}");
-            
+            lenguaje.WriteLine("}");  
         }
         private void cabecera()
         {
@@ -180,14 +177,25 @@ namespace Generador
 
         private void simbolos()
         {
-            if(getContenido() == "(")
+            if(getContenido() == "\\(")
             {
-                match("(");
-                lenguaje.WriteLine(tabula() + "if()");
+                match("\\(");
+                if(esSNT(getContenido()))
+                {
+                    throw new Exception("Error: Se espera un simbolo terminal");
+                }
+                if(esTipo(getContenido()))
+                {
+                    lenguaje.WriteLine(tabula() + "if(getClasificacion() == Tipos." + getContenido() + ")");
+                }
+                else
+                {
+                    lenguaje.WriteLine(tabula() + "if(getContenido() == \"" + getContenido() + "\")");
+                }
                 lenguaje.WriteLine(tabula() + "{");
                 contTab++;
                 simbolos();
-                match(")");
+                match("\\)");
                 contTab--;
                 lenguaje.WriteLine(tabula() + "}");
             }
@@ -203,10 +211,10 @@ namespace Generador
             }
             else if(getClasificacion() == Tipos.ST)
             {
-                lenguaje.WriteLine(tabula() + "match(\"" + getContenido() + "\");");
+                lenguaje.WriteLine(tabula() + "match(\"" + getContenido() + "\");"); 
                 match(Tipos.ST);
             }        
-            if(getClasificacion() != Tipos.FinProduccion && getContenido() != ")")
+            if(getClasificacion() != Tipos.FinProduccion && getContenido() != "\\)")
             {
                 simbolos();
             }
@@ -244,7 +252,7 @@ namespace Generador
             string tab = "";
             for(int i = 0; i < contTab; i++)
             {
-                tab += "\t";
+                tab += "    ";
             }
             return tab;
         }
